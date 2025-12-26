@@ -4,6 +4,9 @@ task before_assets_precompile: :environment do
   # Ensure NODE_OPTIONS is set for all Node.js processes
   # Use environment variable if set, otherwise use default
   node_options = ENV['NODE_OPTIONS'] || '--max-old-space-size=10240 --openssl-legacy-provider'
+  
+  # Export NODE_OPTIONS so all child processes inherit it
+  ENV['NODE_OPTIONS'] = node_options
 
   # run a command which starts your packaging
   system("NODE_OPTIONS='#{node_options}' pnpm install")
