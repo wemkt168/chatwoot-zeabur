@@ -27,11 +27,19 @@ Rails.application.configure do
   smtp_settings[:open_timeout] = ENV['SMTP_OPEN_TIMEOUT'].to_i if ENV['SMTP_OPEN_TIMEOUT'].present?
   smtp_settings[:read_timeout] = ENV['SMTP_READ_TIMEOUT'].to_i if ENV['SMTP_READ_TIMEOUT'].present?
 
-  config.action_mailer.delivery_method = :smtp unless Rails.env.test?
-  config.action_mailer.smtp_settings = smtp_settings
-
-  # Use sendmail if using postfix for email
-  config.action_mailer.delivery_method = :sendmail if ENV['SMTP_ADDRESS'].blank?
+  # Delivery method configuration
+  # In production, always use SMTP (never use sendmail)
+  if Rails.env.production?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = smtp_settings
+  elsif Rails.env.test?
+    config.action_mailer.delivery_method = :test
+  else
+    # Development and other non-production environments
+    config.action_mailer.delivery_method = :smtp unless ENV['SMTP_ADDRESS'].blank?
+    config.action_mailer.smtp_settings = smtp_settings
+    config.action_mailer.delivery_method = :sendmail if ENV['SMTP_ADDRESS'].blank?
+  end
 
   # You can use letter opener for your local development by setting the environment variable
   config.action_mailer.delivery_method = :letter_opener if Rails.env.development? && ENV['LETTER_OPENER']
