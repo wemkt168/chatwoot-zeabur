@@ -3,110 +3,108 @@
 ## 📋 已完成的修改
 
 1. ✅ 修改了 `config/initializers/mailer.rb`，强制 production 环境使用 SMTP
-2. ✅ 创建了 GitHub Actions workflow (`.github/workflows/build-smtp-fix.yml`)
+2. ✅ 代码已推送到 GitHub (`develop` 分支)
+3. ✅ Zeabur 服务已配置为使用 GitHub 储存库作为部署来源
 
-## 🚀 部署步骤
+## 🚀 部署方式：GitHub 储存库（已配置）
 
-### 选项 1：使用 GitHub Actions 自动构建（推荐）
+### 当前配置
 
-#### 1.1 配置 GitHub Secrets
+你的 Zeabur 服务已经配置为使用 GitHub 储存库作为部署来源：
 
-在 GitHub 仓库设置中添加 Docker Hub 认证信息：
+- **rails 服务**：`https://github.com/wemkt168/chatwoot-zeabur` (分支: `develop`)
+- **sidekiq 服务**：`https://github.com/wemkt168/chatwoot-zeabur` (分支: `develop`)
 
-1. 前往：`https://github.com/wemkt168/chatwoot-zeabur/settings/secrets/actions`
-2. 添加以下 Secrets：
-   - **Name**: `DOCKERHUB_USERNAME`
-   - **Value**: `wemkt168`
-   
-   - **Name**: `DOCKERHUB_TOKEN`
-   - **Value**: 你的 Docker Hub Access Token（在 Docker Hub → Account Settings → Security 中生成）
+### 自动部署流程
 
-#### 1.2 提交并推送代码
-
-```bash
-# 配置 git 用户信息（如果还没配置）
-git config user.email "your-email@example.com"
-git config user.name "Your Name"
-
-# 提交更改
-git add config/initializers/mailer.rb .github/workflows/build-smtp-fix.yml
-git commit -m "fix: Force SMTP delivery method in production environment"
-git push origin develop
+```
+代码推送到 GitHub
+    ↓
+Zeabur 自动检测到更新（Webhook）
+    ↓
+Zeabur 自动构建 Docker 镜像（2-5 分钟）
+    ↓
+Zeabur 自动部署新版本（1-2 分钟）
+    ↓
+服务重启，新代码生效
 ```
 
-#### 1.3 触发构建
+### 当前状态
 
-- 推送代码后，GitHub Actions 会自动触发构建
-- 或者手动触发：前往 Actions → "Build and Push SMTP Fix Docker Image" → Run workflow
-
-#### 1.4 等待构建完成
-
-- 在 GitHub Actions 页面查看构建进度
-- 构建完成后，镜像会自动推送到：`wemkt168/chatwoot-zeabur:smtp-fix`
+✅ **代码已推送**：SMTP 修复已推送到 `develop` 分支  
+✅ **服务已绑定**：rails 和 sidekiq 都已绑定到 GitHub 储存库  
+⏳ **等待部署**：Zeabur 应该正在自动构建和部署
 
 ---
 
-### 选项 2：本地手动构建
+## ✅ 验证部署
 
-如果你本地有 Docker 环境，可以手动构建：
+### 1. 检查 Zeabur 部署状态
 
-```bash
-# 1. 确保在项目根目录
-cd chatwoot-zeabur
+在 Zeabur 控制台中：
 
-# 2. 登录 Docker Hub
-docker login
+1. 打开 `rails` 服务的「服務狀態」标签
+   - 查看是否显示「正在部署」或「部署中」
+   - 等待部署完成（通常 3-7 分钟）
 
-# 3. 构建镜像
-docker build -f docker/Dockerfile -t wemkt168/chatwoot-zeabur:smtp-fix .
+2. 打开 `sidekiq` 服务的「服務狀態」标签
+   - 同样检查部署状态
+   - 等待部署完成
 
-# 4. 推送镜像
-docker push wemkt168/chatwoot-zeabur:smtp-fix
+### 2. 检查环境变量
+
+确保以下环境变量已正确设置（在「環境變數」标签中）：
+
+```
+RAILS_ENV=production
+SMTP_ADDRESS=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=<你的 Gmail 应用程式密码>
+SMTP_DOMAIN=gmail.com
+SMTP_AUTHENTICATION=login
+SMTP_ENABLE_STARTTLS_AUTO=true
+MAILER_SENDER_EMAIL=your-email@gmail.com
+FRONTEND_URL=<你的前端 URL>
 ```
 
----
+### 3. 测试邮件发送
 
-## ✅ 在 Zeabur 中验证
+部署完成后：
 
-你已经将 Zeabur 中的 `rails` 和 `sidekiq` 服务镜像设置为 `wemkt168/chatwoot-zeabur:smtp-fix`。
+1. **触发测试邮件**
+   - 在 Chatwoot 中尝试「忘记密码」功能
+   - 或邀请新的 Agent
 
-### 验证步骤：
+2. **检查日志**
+   - 在 Zeabur 的 `rails` 服务中查看日志
+   - 应该看到：
+     - ✅ 不再出现 `Mail::Sendmail::DeliveryError`
+     - ✅ 不再调用 `/usr/sbin/sendmail`
+     - ✅ SMTP 连接成功的信息
 
-1. **确认镜像已更新**
-   - 在 Zeabur 控制台检查服务状态
-   - 确认使用的是新镜像
-
-2. **检查环境变量**
-   确保以下环境变量已正确设置：
-   ```
-   RAILS_ENV=production
-   SMTP_ADDRESS=smtp.gmail.com
-   SMTP_PORT=587
-   SMTP_USERNAME=your-email@gmail.com
-   SMTP_PASSWORD=<你的 Gmail 应用程式密码>
-   SMTP_DOMAIN=gmail.com
-   SMTP_AUTHENTICATION=login
-   SMTP_ENABLE_STARTTLS_AUTO=true
-   MAILER_SENDER_EMAIL=your-email@gmail.com
-   FRONTEND_URL=<你的前端 URL>
-   ```
-
-3. **测试邮件发送**
-   - 在 Chatwoot 中触发密码重置邮件
-   - 检查 Rails 日志，确认使用 SMTP 而非 sendmail
-   - 验证邮件是否成功发送
-
-4. **查看日志确认**
-   在 Zeabur 的 rails 服务日志中，应该看到：
-   - 不再出现 `Mail::Sendmail::DeliveryError`
-   - 不再调用 `/usr/sbin/sendmail`
-   - SMTP 连接成功的信息
+3. **验证邮件发送**
+   - 检查收件箱是否收到邮件
+   - 确认邮件发送成功
 
 ---
 
 ## 🔍 故障排除
 
-如果邮件仍然发送失败：
+### 如果部署失败
+
+1. **检查 GitHub 绑定**
+   - 确认仓库 URL 正确：`https://github.com/wemkt168/chatwoot-zeabur`
+   - 确认分支正确：`develop`
+
+2. **检查构建日志**
+   - 在 Zeabur 服务状态页面查看构建日志
+   - 查找错误信息
+
+3. **手动触发部署**
+   - 在服务设置中，可以尝试「重新部署」按钮
+
+### 如果邮件仍然发送失败
 
 1. **检查环境变量**
    - 确认所有 SMTP 环境变量都已正确设置
@@ -139,12 +137,15 @@ config.action_mailer.delivery_method = :sendmail if ENV['SMTP_ADDRESS'].blank?
 
 **修改后：**
 ```ruby
+# Delivery method configuration
+# In production, always use SMTP (never use sendmail)
 if Rails.env.production?
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = smtp_settings
 elsif Rails.env.test?
   config.action_mailer.delivery_method = :test
 else
+  # Development and other non-production environments
   config.action_mailer.delivery_method = :smtp unless ENV['SMTP_ADDRESS'].blank?
   config.action_mailer.smtp_settings = smtp_settings
   config.action_mailer.delivery_method = :sendmail if ENV['SMTP_ADDRESS'].blank?
@@ -157,3 +158,19 @@ end
 - **Test 环境**：使用 `:test` 模式
 - **其他环境**：有 SMTP 配置时使用 SMTP，否则使用 sendmail
 
+---
+
+## 🎯 优势
+
+使用 GitHub 储存库作为部署来源的优势：
+
+- ✅ **无需配置 Docker Hub Token**
+- ✅ **无需手动构建镜像**
+- ✅ **自动检测代码更新**
+- ✅ **自动构建和部署**
+- ✅ **配置简单，流程直接**
+
+---
+
+**最后更新**：2025-12-26  
+**部署方式**：GitHub 储存库自动部署
