@@ -11,8 +11,15 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
 
   # Config related to smtp
+  # In production, require SMTP_ADDRESS to be set
+  smtp_address = ENV['SMTP_ADDRESS']
+  if Rails.env.production? && smtp_address.blank?
+    Rails.logger.warn 'WARNING: SMTP_ADDRESS is not set in production. Email delivery will fail!'
+    Rails.logger.warn 'Please set SMTP_ADDRESS environment variable in Zeabur service settings.'
+  end
+  
   smtp_settings = {
-    address: ENV.fetch('SMTP_ADDRESS', 'localhost'),
+    address: smtp_address.presence || 'localhost',
     port: ENV.fetch('SMTP_PORT', 587)
   }
 
