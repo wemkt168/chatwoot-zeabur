@@ -8,7 +8,18 @@ module ExceptionList
                             RestClient::BadGateway, RestClient::Unauthorized, RestClient::PayloadTooLarge,
                             RestClient::MovedPermanently, RestClient::ServiceUnavailable, Errno::ECONNREFUSED, SocketError].freeze
   SMTP_EXCEPTIONS = [
-    Net::SMTPSyntaxError
+    Net::SMTPSyntaxError,
+    Net::SMTPAuthenticationError,
+    Net::SMTPFatalError,
+    Net::SMTPServerBusy,
+    Net::SMTPUnknownError,
+    Net::OpenTimeout,
+    Net::ReadTimeout,
+    Errno::ECONNREFUSED,
+    Errno::ECONNRESET,
+    Errno::ETIMEDOUT,
+    Errno::EHOSTUNREACH,
+    SocketError
   ].freeze
 
   IMAP_EXCEPTIONS = [

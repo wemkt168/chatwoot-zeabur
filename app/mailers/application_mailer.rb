@@ -26,7 +26,11 @@ class ApplicationMailer < ActionMailer::Base
 
   def handle_smtp_exceptions(message)
     Rails.logger.warn 'Failed to send Email'
-    Rails.logger.error "Exception: #{message}"
+    Rails.logger.error "Exception: #{message.class} - #{message}"
+    # Log SMTP configuration for debugging
+    smtp_address = ActionMailer::Base.smtp_settings[:address] rescue 'unknown'
+    smtp_port = ActionMailer::Base.smtp_settings[:port] rescue 'unknown'
+    Rails.logger.error "SMTP config: address=#{smtp_address}, port=#{smtp_port}"
   end
 
   def send_mail_with_liquid(*args)
