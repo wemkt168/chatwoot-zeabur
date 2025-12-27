@@ -22,16 +22,9 @@ class DeviseOverrides::PasswordsController < Devise::PasswordsController
     if params[:reset_password_token].present?
       reset_password_token = Devise.token_generator.digest(self, :reset_password_token, params[:reset_password_token])
       @recoverable = User.find_by(reset_password_token: reset_password_token)
-      
-      # 检查 token 是否过期（6小时内有效）
-      if @recoverable && @recoverable.reset_password_sent_at.present?
-        if @recoverable.reset_password_sent_at < 6.hours.ago
-          @recoverable = nil  # Token 已过期
-        end
-      end
     end
 
-    # 如果找到用户且 token 有效，允许重置密码
+    # 如果找到用户，允许重置密码
     if @recoverable && reset_password_and_confirmation(@recoverable)
       send_auth_headers(@recoverable)
       render partial: 'devise/auth', formats: [:json], locals: { resource: @recoverable }
