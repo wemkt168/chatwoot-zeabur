@@ -14,7 +14,6 @@ export default {
   },
   props: {
     resetPasswordToken: { type: String, default: '' },
-    email: { type: String, default: '' },
   },
   setup() {
     return { v$: useVuelidate() };
@@ -71,7 +70,6 @@ export default {
         confirmPassword: this.credentials.confirmPassword,
         password: this.credentials.password,
         resetPasswordToken: this.resetPasswordToken,
-        email: this.email || this.$route.query.email || '',
       };
       setNewPassword(credentials)
         .then(() => {

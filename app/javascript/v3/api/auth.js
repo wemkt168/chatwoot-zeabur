@@ -61,11 +61,10 @@ export const register = async creds => {
   return null;
 };
 
-export const verifyPasswordToken = async ({ confirmationToken, email }) => {
+export const verifyPasswordToken = async ({ confirmationToken }) => {
   try {
     const response = await wootAPI.post('auth/confirmation', {
       confirmation_token: confirmationToken,
-      email: email,
     });
     setAuthCredentials(response);
   } catch (error) {
@@ -77,14 +76,12 @@ export const setNewPassword = async ({
   resetPasswordToken,
   password,
   confirmPassword,
-  email,
 }) => {
   try {
     const response = await wootAPI.put('auth/password', {
       reset_password_token: resetPasswordToken,
       password_confirmation: confirmPassword,
       password,
-      email: email,
     });
     setAuthCredentials(response);
   } catch (error) {

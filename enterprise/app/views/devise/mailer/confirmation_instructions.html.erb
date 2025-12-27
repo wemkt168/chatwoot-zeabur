@@ -27,7 +27,7 @@
 
 
 <% if @resource.unconfirmed_email.present? %>
-  <p><%= link_to 'Confirm my account', frontend_url('auth/confirmation', confirmation_token: @token, email: @resource.email) %></p>
+  <p><%= link_to 'Confirm my account', frontend_url('auth/confirmation', confirmation_token: @token) %></p>
 <% elsif @resource.confirmed? %>
   <% if is_saml_account %>
     <p>You can now access your account by logging in through your organization's SSO portal.</p>
@@ -38,8 +38,8 @@
   <% if is_saml_account %>
     <p>You can access your account by logging in through your organization's SSO portal.</p>
   <% else %>
-    <p><%= link_to 'Confirm my account', frontend_url('auth/password/edit', reset_password_token: @resource.send(:set_reset_password_token), email: @resource.email) %></p>
+    <p><%= link_to 'Confirm my account', frontend_url('auth/password/edit', reset_password_token: @resource.send(:set_reset_password_token)) %></p>
   <% end %>
 <% else %>
-  <p><%= link_to 'Confirm my account', frontend_url('auth/confirmation', confirmation_token: @token, email: @resource.email) %></p>
+  <p><%= link_to 'Confirm my account', frontend_url('auth/confirmation', confirmation_token: @token) %></p>
 <% end %>

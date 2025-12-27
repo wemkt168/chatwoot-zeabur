@@ -10,10 +10,6 @@ export default {
       type: String,
       default: '',
     },
-    email: {
-      type: String,
-      default: '',
-    },
   },
   mounted() {
     this.confirmToken();
@@ -23,7 +19,6 @@ export default {
       try {
         await verifyPasswordToken({
           confirmationToken: this.confirmationToken,
-          email: this.email || this.$route.query.email || '',
         });
         window.location = DEFAULT_REDIRECT_URL;
       } catch (error) {

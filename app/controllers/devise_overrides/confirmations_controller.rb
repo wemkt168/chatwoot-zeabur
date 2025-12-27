@@ -4,14 +4,11 @@ class DeviseOverrides::ConfirmationsController < Devise::ConfirmationsController
   skip_before_action :authenticate_user!, raise: false
 
   def create
-    # params: confirmation_token, email
+    # params: confirmation_token
     @confirmable = nil
 
-    # 优先通过 email 查找用户（如果提供了 email）
-    if params[:email].present?
-      @confirmable = User.from_email(params[:email])
-    # 否则尝试通过 token 查找（保持向后兼容）
-    elsif params[:confirmation_token].present?
+    # 通过 token 查找用户
+    if params[:confirmation_token].present?
       @confirmable = User.find_by(confirmation_token: params[:confirmation_token])
     end
 
