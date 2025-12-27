@@ -15,15 +15,24 @@ class DeviseOverrides::PasswordsController < Devise::PasswordsController
   end
 
   def update
-    # params: reset_password_token, password, password_confirmation
-    original_token = params[:reset_password_token]
-    reset_password_token = Devise.token_generator.digest(self, :reset_password_token, original_token)
-    @recoverable = User.find_by(reset_password_token: reset_password_token)
+    # params: reset_password_token, password, password_confirmation, email
+    @recoverable = nil
+
+    # 优先通过 email 查找用户（如果提供了 email）
+    if params[:email].present?
+      @recoverable = User.from_email(params[:email])
+    # 否则尝试通过 token 查找（保持向后兼容）
+    elsif params[:reset_password_token].present?
+      reset_password_token = Devise.token_generator.digest(self, :reset_password_token, params[:reset_password_token])
+      @recoverable = User.find_by(reset_password_token: reset_password_token)
+    end
+
+    # 如果找到用户，允许重置密码
     if @recoverable && reset_password_and_confirmation(@recoverable)
       send_auth_headers(@recoverable)
       render partial: 'devise/auth', formats: [:json], locals: { resource: @recoverable }
     else
-      render json: { message: 'Invalid token', redirect_url: '/' }, status: :unprocessable_entity
+      render json: { message: 'User not found', redirect_url: '/' }, status: :unprocessable_entity
     end
   end
 

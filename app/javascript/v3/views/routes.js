@@ -45,6 +45,7 @@ export default [
     props: route => ({
       config: route.query.config,
       confirmationToken: route.query.confirmation_token,
+      email: route.query.email,
       redirectUrl: route.query.route_url,
     }),
   },
@@ -56,6 +57,7 @@ export default [
     props: route => ({
       config: route.query.config,
       resetPasswordToken: route.query.reset_password_token,
+      email: route.query.email,
       redirectUrl: route.query.route_url,
     }),
   },
