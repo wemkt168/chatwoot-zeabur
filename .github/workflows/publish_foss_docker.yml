@@ -7,13 +7,14 @@
 name: Publish Chatwoot CE docker images
 
 on:
-  push:
-    branches:
-      - develop
-      - master
-    tags:
-      - v*
-  workflow_dispatch:
+  # Disabled automatic triggers - Zeabur builds directly from GitHub repo
+  # push:
+  #   branches:
+  #     - develop
+  #     - master
+  #   tags:
+  #     - v*
+  workflow_dispatch:  # Only manual trigger available
 
 env:
   DOCKER_REPO: chatwoot/chatwoot
