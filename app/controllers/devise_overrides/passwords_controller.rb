@@ -21,7 +21,7 @@ class DeviseOverrides::PasswordsController < Devise::PasswordsController
     # 通过 token 查找用户
     if params[:reset_password_token].present?
       reset_password_token = Devise.token_generator.digest(self, :reset_password_token, params[:reset_password_token])
-      @recoverable = User.find_by(reset_password_token: reset_password_token)
+    @recoverable = User.find_by(reset_password_token: reset_password_token)
     end
 
     # 如果找到用户，允许重置密码

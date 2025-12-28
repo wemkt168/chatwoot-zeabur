@@ -9,7 +9,7 @@ class DeviseOverrides::ConfirmationsController < Devise::ConfirmationsController
 
     # 通过 token 查找用户
     if params[:confirmation_token].present?
-      @confirmable = User.find_by(confirmation_token: params[:confirmation_token])
+    @confirmable = User.find_by(confirmation_token: params[:confirmation_token])
     end
 
     # 如果找到用户，允许确认

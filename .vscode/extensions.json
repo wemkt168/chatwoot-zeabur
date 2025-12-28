@@ -27,6 +27,6 @@
     // HTML CSS Support
     "ecmel.vscode-html-css",
     // Tailwind CSS Intellisense
-    "bradlc.vscode-tailwindcss",
+    "bradlc.vscode-tailwindcss"
   ]
 }
