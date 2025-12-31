@@ -159,8 +159,20 @@ export const IFrameHelper = {
       const campaignsSnoozedTill = Cookies.get('cw_snooze_campaigns_till');
       console.log('[SDK] Widget 加载完成，准备发送 config-set');
       console.log('[SDK] window.$chatwoot.locale:', window.$chatwoot.locale);
+      
+      // 如果 locale 未设置，尝试从浏览器语言获取
+      let localeToSend = window.$chatwoot.locale;
+      if (!localeToSend && window.$chatwoot.useBrowserLanguage) {
+        localeToSend = window.navigator.language.replace('-', '_');
+        console.log('[SDK] locale 未设置，从浏览器语言获取:', localeToSend);
+      }
+      if (!localeToSend) {
+        localeToSend = 'en'; // 默认回退到英文
+        console.log('[SDK] locale 仍未设置，使用默认值: en');
+      }
+      
       IFrameHelper.sendMessage('config-set', {
-        locale: window.$chatwoot.locale,
+        locale: localeToSend,
         position: window.$chatwoot.position,
         hideMessageBubble: window.$chatwoot.hideMessageBubble,
         showPopoutButton: window.$chatwoot.showPopoutButton,
@@ -176,7 +188,7 @@ export const IFrameHelper = {
         enableEmojiPicker: window.$chatwoot.enableEmojiPicker,
         enableEndConversation: window.$chatwoot.enableEndConversation,
       });
-      console.log('[SDK] 已发送 config-set 事件，locale:', window.$chatwoot.locale);
+      console.log('[SDK] 已发送 config-set 事件，locale:', localeToSend);
       IFrameHelper.onLoad({
         widgetColor: message.config.channelConfig.widgetColor,
       });
