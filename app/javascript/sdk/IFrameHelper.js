@@ -157,6 +157,8 @@ export const IFrameHelper = {
       updateAuthCookie(message.config.authToken, window.$chatwoot.baseDomain);
       window.$chatwoot.hasLoaded = true;
       const campaignsSnoozedTill = Cookies.get('cw_snooze_campaigns_till');
+      console.log('[SDK] Widget 加载完成，准备发送 config-set');
+      console.log('[SDK] window.$chatwoot.locale:', window.$chatwoot.locale);
       IFrameHelper.sendMessage('config-set', {
         locale: window.$chatwoot.locale,
         position: window.$chatwoot.position,
@@ -174,6 +176,7 @@ export const IFrameHelper = {
         enableEmojiPicker: window.$chatwoot.enableEmojiPicker,
         enableEndConversation: window.$chatwoot.enableEndConversation,
       });
+      console.log('[SDK] 已发送 config-set 事件，locale:', window.$chatwoot.locale);
       IFrameHelper.onLoad({
         widgetColor: message.config.channelConfig.widgetColor,
       });

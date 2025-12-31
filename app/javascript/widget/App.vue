@@ -80,6 +80,7 @@ export default {
   },
   mounted() {
     const { websiteToken, locale, widgetColor } = window.chatwootWebChannel;
+    console.log('[Widget] mounted，初始 locale (账户默认):', locale);
     this.setLocale(locale);
     this.setWidgetColor(widgetColor);
     setHeader(window.authToken);
@@ -135,8 +136,14 @@ export default {
       });
     },
     setLocale(localeWithVariation) {
-      if (!localeWithVariation) return;
+      console.log('[Widget] setLocale 被调用，参数:', localeWithVariation);
+      if (!localeWithVariation) {
+        console.log('[Widget] localeWithVariation 为空，返回');
+        return;
+      }
       const { enabledLanguages } = window.chatwootWebChannel;
+      console.log('[Widget] enabledLanguages:', enabledLanguages);
+      
       const localeWithoutVariation = localeWithVariation.split('_')[0];
       const hasLocaleWithoutVariation = enabledLanguages.some(
         lang => lang.iso_639_1_code === localeWithoutVariation
@@ -145,14 +152,20 @@ export default {
         lang => lang.iso_639_1_code === localeWithVariation
       );
 
+      console.log('[Widget] hasLocaleWithVariation:', hasLocaleWithVariation, 'for', localeWithVariation);
+      console.log('[Widget] hasLocaleWithoutVariation:', hasLocaleWithoutVariation, 'for', localeWithoutVariation);
+
       if (hasLocaleWithVariation) {
+        console.log('[Widget] 使用完整语言代码:', localeWithVariation);
         this.$root.$i18n.locale = localeWithVariation;
       } else if (hasLocaleWithoutVariation) {
+        console.log('[Widget] 使用基础语言代码:', localeWithoutVariation);
         this.$root.$i18n.locale = localeWithoutVariation;
       } else {
-        // 如果浏览器语言不在支持列表中，回退到英文
+        console.log('[Widget] 语言不在支持列表中，回退到英文');
         this.$root.$i18n.locale = 'en';
       }
+      console.log('[Widget] 最终设置的 locale:', this.$root.$i18n.locale);
     },
     registerUnreadEvents() {
       emitter.on(ON_AGENT_MESSAGE_RECEIVED, () => {
@@ -257,6 +270,8 @@ export default {
         }
         const message = IFrameHelper.getMessage(e);
         if (message.event === 'config-set') {
+          console.log('[Widget] 收到 config-set 事件:', message);
+          console.log('[Widget] message.locale:', message.locale);
           this.setLocale(message.locale);
           this.setBubbleLabel();
           this.fetchOldConversations().then(() => this.setUnreadView());

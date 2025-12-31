@@ -51,8 +51,14 @@ const runSDK = ({ baseUrl, websiteToken }) => {
   let locale = chatwootSettings.locale;
   let baseDomain = chatwootSettings.baseDomain;
 
+  console.log('[SDK] chatwootSettings:', chatwootSettings);
+  console.log('[SDK] navigator.language:', window.navigator.language);
+
   if (chatwootSettings.useBrowserLanguage) {
     locale = window.navigator.language.replace('-', '_');
+    console.log('[SDK] 检测到浏览器语言:', locale);
+  } else {
+    console.log('[SDK] useBrowserLanguage 未启用，使用默认 locale:', locale);
   }
 
   window.$chatwoot = {
