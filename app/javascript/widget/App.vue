@@ -272,7 +272,20 @@ export default {
         if (message.event === 'config-set') {
           console.log('[Widget] 收到 config-set 事件:', message);
           console.log('[Widget] message.locale:', message.locale);
-          this.setLocale(message.locale);
+          
+          // 如果 locale 未设置，尝试从浏览器语言获取
+          let localeToUse = message.locale;
+          if (!localeToUse) {
+            const browserLanguage = window.navigator.language.replace('-', '_');
+            console.log('[Widget] message.locale 未设置，从浏览器语言获取:', browserLanguage);
+            localeToUse = browserLanguage;
+          }
+          if (!localeToUse) {
+            localeToUse = 'en'; // 默认回退到英文
+            console.log('[Widget] locale 仍未设置，使用默认值: en');
+          }
+          
+          this.setLocale(localeToUse);
           this.setBubbleLabel();
           this.fetchOldConversations().then(() => this.setUnreadView());
           this.fetchAvailableAgents(websiteToken);
