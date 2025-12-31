@@ -149,6 +149,9 @@ export default {
         this.$root.$i18n.locale = localeWithVariation;
       } else if (hasLocaleWithoutVariation) {
         this.$root.$i18n.locale = localeWithoutVariation;
+      } else {
+        // 如果浏览器语言不在支持列表中，回退到英文
+        this.$root.$i18n.locale = 'en';
       }
     },
     registerUnreadEvents() {

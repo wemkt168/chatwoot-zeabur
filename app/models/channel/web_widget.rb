@@ -63,6 +63,10 @@ class Channel::WebWidget < ApplicationRecord
   def web_widget_script
     "
     <script>
+      window.chatwootSettings = {
+        useBrowserLanguage: true,
+        locale: 'en'
+      };
       (function(d,t) {
         var BASE_URL=\"#{ENV.fetch('FRONTEND_URL', '')}\";
         var g=d.createElement(t),s=d.getElementsByTagName(t)[0];

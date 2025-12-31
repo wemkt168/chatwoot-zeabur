@@ -89,6 +89,8 @@ export default {
         position: this.widgetBubblePosition,
         type: this.widgetBubbleType,
         launcherTitle: this.widgetBubbleLauncherTitle,
+        useBrowserLanguage: true,
+        locale: 'en',
       };
       let script = this.inbox.web_widget_script;
       return (
