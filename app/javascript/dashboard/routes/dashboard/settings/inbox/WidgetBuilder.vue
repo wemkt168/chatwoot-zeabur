@@ -93,6 +93,14 @@ export default {
         locale: 'en',
       };
       let script = this.inbox.web_widget_script;
+      
+      // 检查脚本中是否已经包含 window.chatwootSettings
+      if (script.includes('window.chatwootSettings')) {
+        // 如果已包含，直接返回脚本（因为 web_widget_script 已经包含了正确的设置）
+        return script;
+      }
+      
+      // 如果未包含，使用原来的插入逻辑
       return (
         script.substring(0, 13) +
         this.$t('INBOX_MGMT.WIDGET_BUILDER.SCRIPT_SETTINGS', {
