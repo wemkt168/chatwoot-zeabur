@@ -43,7 +43,21 @@ class AutomationRules::ActionService < ActionService
   def send_message(message)
     return if conversation_a_tweet?
 
-    params = { content: message[0], private: false, content_attributes: { automation_rule_id: @rule.id } }
+    message_content = message[0]
+    
+    # 检查是否应该跳过发送（防止重复消息）
+    if AutomationRules::DuplicateMessagePreventionService.should_skip_message?(
+      conversation: @conversation,
+      message_content: message_content,
+      automation_rule_id: @rule.id
+    )
+      Rails.logger.info(
+        "[AutomationRule] Skipping duplicate message for rule #{@rule.id} in conversation #{@conversation.id}"
+      )
+      return
+    end
+
+    params = { content: message_content, private: false, content_attributes: { automation_rule_id: @rule.id } }
     Messages::MessageBuilder.new(nil, @conversation, params).perform
   end
 

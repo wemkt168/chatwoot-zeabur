@@ -28,6 +28,9 @@ class AutomationRuleListener < BaseListener
     rules = current_account_rules('message_created', account)
 
     rules.each do |rule|
+      # 检查规则是否最近被执行过（防止重复触发）
+      next if rule_recently_executed?(rule, message.conversation)
+      
       conditions_match = ::AutomationRules::ConditionsFilterService.new(rule, message.conversation,
                                                                         { message: message, changed_attributes: changed_attributes }).perform
       ::AutomationRules::ActionService.new(rule, account, message.conversation).perform if conditions_match.present?
@@ -51,6 +54,9 @@ class AutomationRuleListener < BaseListener
     rules = current_account_rules(event_name, account)
 
     rules.each do |rule|
+      # 检查规则是否最近被执行过（防止重复触发）
+      next if rule_recently_executed?(rule, conversation)
+      
       conditions_match = ::AutomationRules::ConditionsFilterService.new(rule, conversation, { changed_attributes: changed_attributes }).perform
       AutomationRules::ActionService.new(rule, account, conversation).perform if conditions_match.present?
     end
@@ -82,5 +88,16 @@ class AutomationRuleListener < BaseListener
   def ignore_message_created_event?(event)
     message = event.data[:message]
     performed_by_automation?(event) || message.activity? || message.auto_reply_email?
+  end
+
+  # 检查规则是否在时间窗口内已被执行过
+  # 防止同一个规则在短时间内被多次触发
+  def rule_recently_executed?(rule, conversation, time_window: 60)
+    # 检查对话中是否有该规则在时间窗口内发送的消息
+    conversation.messages
+                .outgoing
+                .where('created_at > ?', time_window.seconds.ago)
+                .where("content_attributes->>'automation_rule_id' = ?", rule.id.to_s)
+                .exists?
   end
 end
