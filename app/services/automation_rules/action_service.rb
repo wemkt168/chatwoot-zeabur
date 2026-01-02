@@ -52,7 +52,8 @@ class AutomationRules::ActionService < ActionService
       automation_rule_id: @rule.id
     )
       Rails.logger.info(
-        "[AutomationRule] Skipping duplicate message for rule #{@rule.id} in conversation #{@conversation.id}"
+        "[AutomationRule] Skipping duplicate message for rule #{@rule.id} (event: #{@rule.event_name}) " \
+        "in conversation #{@conversation.id}. Message content: #{message_content[0..50]}..."
       )
       return
     end

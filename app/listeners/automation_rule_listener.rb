@@ -29,11 +29,21 @@ class AutomationRuleListener < BaseListener
 
     rules.each do |rule|
       # 检查规则是否最近被执行过（防止重复触发）
-      next if rule_recently_executed?(rule, message.conversation)
+      if rule_recently_executed?(rule, message.conversation)
+        Rails.logger.debug(
+          "[AutomationRule] Rule #{rule.id} (#{rule.event_name}) recently executed, skipping for conversation #{message.conversation.id}"
+        )
+        next
+      end
       
       conditions_match = ::AutomationRules::ConditionsFilterService.new(rule, message.conversation,
                                                                         { message: message, changed_attributes: changed_attributes }).perform
-      ::AutomationRules::ActionService.new(rule, account, message.conversation).perform if conditions_match.present?
+      if conditions_match.present?
+        Rails.logger.info(
+          "[AutomationRule] Executing rule #{rule.id} (#{rule.event_name}) for conversation #{message.conversation.id}"
+        )
+        ::AutomationRules::ActionService.new(rule, account, message.conversation).perform
+      end
     end
   end
 
@@ -55,10 +65,20 @@ class AutomationRuleListener < BaseListener
 
     rules.each do |rule|
       # 检查规则是否最近被执行过（防止重复触发）
-      next if rule_recently_executed?(rule, conversation)
+      if rule_recently_executed?(rule, conversation)
+        Rails.logger.debug(
+          "[AutomationRule] Rule #{rule.id} (#{rule.event_name}) recently executed, skipping for conversation #{conversation.id}"
+        )
+        next
+      end
       
       conditions_match = ::AutomationRules::ConditionsFilterService.new(rule, conversation, { changed_attributes: changed_attributes }).perform
-      AutomationRules::ActionService.new(rule, account, conversation).perform if conditions_match.present?
+      if conditions_match.present?
+        Rails.logger.info(
+          "[AutomationRule] Executing rule #{rule.id} (#{rule.event_name}) for conversation #{conversation.id}"
+        )
+        AutomationRules::ActionService.new(rule, account, conversation).perform
+      end
     end
   end
 
@@ -94,10 +114,13 @@ class AutomationRuleListener < BaseListener
   # 防止同一个规则在短时间内被多次触发
   def rule_recently_executed?(rule, conversation, time_window: 60)
     # 检查对话中是否有该规则在时间窗口内发送的消息
+    # 排除已删除的消息（content_attributes->>'deleted' != 'true'）
+    # 只检查未删除的消息，因为已删除的消息不应该阻止规则重新执行
     conversation.messages
                 .outgoing
                 .where('created_at > ?', time_window.seconds.ago)
                 .where("content_attributes->>'automation_rule_id' = ?", rule.id.to_s)
+                .where("(content_attributes->>'deleted' IS NULL OR content_attributes->>'deleted' != 'true')")
                 .exists?
   end
 end

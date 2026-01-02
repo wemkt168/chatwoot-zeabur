@@ -11,10 +11,12 @@ class AutomationRules::DuplicateMessagePreventionService
     return false if message_content.blank?
 
     # 1. 检查时间窗口内是否有相同内容的消息（由自动化规则发送）
+    # 排除已删除的消息（content_attributes->>'deleted' != 'true'）
     recent_duplicate = conversation.messages
                                     .outgoing
                                     .where('created_at > ?', time_window.seconds.ago)
                                     .where("content_attributes->>'automation_rule_id' = ?", automation_rule_id.to_s)
+                                    .where("(content_attributes->>'deleted' IS NULL OR content_attributes->>'deleted' != 'true')")
                                     .where('content = ?', message_content.strip)
                                     .exists?
 
@@ -40,7 +42,11 @@ class AutomationRules::DuplicateMessagePreventionService
                 .outgoing
                 .where('created_at > ?', time_window.seconds.ago)
                 .where("content_attributes->>'automation_rule_id' = ?", automation_rule_id.to_s)
+                .where("(content_attributes->>'deleted' IS NULL OR content_attributes->>'deleted' != 'true')")
                 .find_each do |message|
+      # 双重检查：跳过已删除的消息
+      next if message.content_attributes&.dig('deleted') == true
+      
       normalized_existing = normalize_message(message.content)
       similarity = calculate_similarity(normalized_content, normalized_existing)
       
